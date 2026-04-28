@@ -5,7 +5,7 @@ github_analytics:
       type: snowflake
       account: EIKVVTV-AH19983
       user: AIRBYTE_USER
-      password: "091283IHSD*3Ssadsa"
+      password: ""
       role: AIRBYTE_ROLE
       warehouse: AIRBYTE_WH
       database: GITHUB
