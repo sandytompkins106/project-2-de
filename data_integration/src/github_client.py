@@ -135,6 +135,17 @@ class GitHubClient:
                 break
             all_items.extend(items)
 
+        # Deduplicate by id — GitHub Search API can return the same item on
+        # multiple pages when results shift between page fetches (sort=updated).
+        seen: set[int] = set()
+        deduped: list[dict[str, Any]] = []
+        for item in all_items:
+            item_id = item.get("id")
+            if item_id not in seen:
+                seen.add(item_id)
+                deduped.append(item)
+        all_items = deduped
+
         return ResourceResult(
             resource=resource,
             items=all_items,
