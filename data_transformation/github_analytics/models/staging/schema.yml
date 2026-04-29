@@ -1,0 +1,75 @@
+version: 2
+
+models:
+  - name: stg_github__repositories
+    description: "Staged repository records unpacked from Airbyte RAW VARIANT column"
+    columns:
+      - name: airbyte_raw_id
+        tests:
+          - not_null
+      - name: repo_id
+        tests:
+          - not_null
+      - name: full_name
+        tests:
+          - not_null
+      - name: owner_login
+        tests:
+          - not_null
+      - name: visibility
+        tests:
+          - accepted_values:
+              values: ['public', 'private', 'internal']
+      - name: stargazers_count
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: forks_count
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+  - name: stg_github__pull_requests
+    description: "Staged pull request records unpacked from Airbyte RAW VARIANT column"
+    columns:
+      - name: airbyte_raw_id
+        tests:
+          - not_null
+      - name: pr_id
+        tests:
+          - not_null
+      - name: state
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['open', 'closed']
+      - name: author_login
+        tests:
+          - not_null
+      - name: comments_count
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+  - name: stg_github__issues
+    description: "Staged issue records unpacked from Airbyte RAW VARIANT column"
+    columns:
+      - name: airbyte_raw_id
+        tests:
+          - not_null
+      - name: issue_id
+        tests:
+          - not_null
+      - name: state
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['open', 'closed']
+      - name: author_login
+        tests:
+          - not_null
+      - name: comments_count
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"

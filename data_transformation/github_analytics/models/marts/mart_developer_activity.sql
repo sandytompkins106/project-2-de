@@ -1,5 +1,12 @@
 -- Developer activity: repo creation patterns and engagement per owner
 -- Analytics question: Who are the most active developers? What do they build?
+with latest_repos as (
+    select *
+    from {{ ref('stg_github__repositories') }}
+    where owner_login is not null
+    QUALIFY ROW_NUMBER() OVER (PARTITION BY repo_id ORDER BY updated_at DESC) = 1
+)
+
 select
     owner_login,
     owner_id,
@@ -29,6 +36,5 @@ select
     MAX(created_at)                                 as latest_repo_at,
     DATEDIFF('day', MIN(created_at), MAX(created_at)) as active_days_span
 
-from {{ ref('stg_github__repositories') }}
-where owner_login is not null
+from latest_repos
 group by owner_login, owner_id, owner_type
