@@ -7,13 +7,9 @@ from dagster_airbyte import AirbyteCloudWorkspace, AirbyteConnectionTableProps, 
 from dagster_dbt import DagsterDbtTranslator as _DbtTranslatorBase, DbtCliResource, dbt_assets
 from dotenv import load_dotenv
 
-# Load env vars (local only — Dagster Cloud uses UI env vars)
-# On Cloud, __file__ is in site-packages so parents[2] is wrong; fall back to cwd
-# (dagster_cloud.yaml sets working_directory: . which makes cwd = repo root on Cloud)
-_file_based_root = Path(__file__).resolve().parents[2]
-_REPO_ROOT = _file_based_root if (_file_based_root / "data_transformation").exists() else Path(os.getcwd())
-load_dotenv(_REPO_ROOT / "data_integration" / ".env")
-load_dotenv(_REPO_ROOT / "data_orchestration" / ".env")
+# Load env vars (local only — Dagster Cloud uses UI env vars set in the Dagster+ UI)
+load_dotenv(Path("data_integration") / ".env")
+load_dotenv(Path("data_orchestration") / ".env")
 
 _AIRBYTE_CONNECTION_ID = os.getenv("AIRBYTE_CONNECTION_ID", "")
 _AIRBYTE_CLIENT_ID = os.getenv("AIRBYTE_CLIENT_ID", "")
@@ -47,9 +43,9 @@ airbyte_assets = build_airbyte_assets_definitions(
 )
 
 # ---------------------------------------------------------------------------
-# dbt resource + manifest
+# dbt resource + manifest — relative to cwd (repo root both locally and on Dagster Cloud)
 # ---------------------------------------------------------------------------
-dbt_project_dir = (_REPO_ROOT / "data_transformation" / "github_analytics").resolve()
+dbt_project_dir = Path("data_transformation") / "github_analytics"
 dbt_resource = DbtCliResource(project_dir=os.fspath(dbt_project_dir))
 
 dbt_manifest_path = (
@@ -78,7 +74,7 @@ def github_analytics_dbt_assets(context: AssetExecutionContext, dbt: DbtCliResou
 )
 def github_extraction(context: AssetExecutionContext) -> None:
     # Re-insert path in case this step runs in a Dagster subprocess
-    _di = str(_REPO_ROOT / "data_integration")
+    _di = str(Path("data_integration").resolve())
     if _di not in sys.path:
         sys.path.insert(0, _di)
 
