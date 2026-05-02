@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from loguru import logger
+
 from .github_client import GitHubClient
 from .s3_writer import upload_jsonl
 
@@ -36,7 +38,7 @@ def run_phase1_extraction(
     github_token: str,
     github_api_url: str,
     resources: list[str],
-    since: str,
+    date: str,
     per_page: int,
     max_pages: int,
     output_dir: str,
@@ -46,6 +48,7 @@ def run_phase1_extraction(
 ) -> dict[str, Any]:
     run_id = str(uuid.uuid4())
     now_utc = datetime.now(timezone.utc)
+    logger.info("Starting extraction | date={} run_id={}", date, run_id)
 
     client = GitHubClient(
         base_url=github_api_url,
@@ -60,7 +63,9 @@ def run_phase1_extraction(
     }
 
     for resource in resources:
-        response = client.fetch_resource(resource=resource, since=since, max_pages=max_pages)
+        logger.info("Fetching {} for {}", resource, date)
+        response = client.fetch_resource(resource=resource, date=date, max_pages=max_pages)
+        logger.info("{}: {} items across {} pages", resource, len(response.items), response.pages_fetched)
 
         enriched: list[dict[str, Any]] = []
         extracted_at = datetime.now(timezone.utc).isoformat()
@@ -89,12 +94,12 @@ def run_phase1_extraction(
             )
             jsonl_content = "\n".join(json.dumps(r, default=str) for r in enriched)
             s3_data_uri = upload_jsonl(jsonl_content, s3_bucket, s3_key, aws_region)
-            print(f"  Uploaded to {s3_data_uri}")
+            logger.info("Uploaded {} → {}", resource, s3_data_uri)
 
         manifest: dict[str, Any] = {
             "resource": resource,
             "run_id": run_id,
-            "since": since,
+            "date": date,
             "records": len(enriched),
             "pages_fetched": response.pages_fetched,
             "request_count": response.request_count,
@@ -120,4 +125,5 @@ def run_phase1_extraction(
         }
 
     results["finished_at_utc"] = datetime.now(timezone.utc).isoformat()
+    logger.info("Extraction complete | run_id={}", run_id)
     return results

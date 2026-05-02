@@ -18,9 +18,9 @@ def _parse_args() -> argparse.Namespace:
         help="Comma-separated resources: repositories,pull_requests,issues",
     )
     parser.add_argument(
-        "--since",
+        "--date",
         default=None,
-        help="Filter date (UTC) in YYYY-MM-DD format. Defaults to env GITHUB_SINCE or today.",
+        help="Single date (UTC) in YYYY-MM-DD format to extract. Defaults to env GITHUB_SINCE or today.",
     )
     parser.add_argument(
         "--max-pages",
@@ -36,7 +36,7 @@ def main() -> None:
     settings = get_settings()
 
     resources = [r.strip() for r in args.resources.split(",") if r.strip()]
-    since = args.since or settings.since
+    date = args.date or settings.since
     max_pages = args.max_pages if args.max_pages is not None else settings.max_pages
 
     if not settings.github_token:
@@ -46,7 +46,7 @@ def main() -> None:
         github_token=settings.github_token,
         github_api_url=settings.github_api_url,
         resources=resources,
-        since=since,
+        date=date,
         per_page=settings.per_page,
         max_pages=max_pages,
         output_dir=settings.output_dir,

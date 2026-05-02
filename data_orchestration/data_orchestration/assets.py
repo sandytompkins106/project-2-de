@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from dagster import AssetExecutionContext, AssetKey, AssetSpec, AutomationCondition, EnvVar, asset
+from dagster import AssetExecutionContext, AssetKey, AssetSpec, AutomationCondition, DailyPartitionsDefinition, EnvVar, asset
 from dagster_airbyte import AirbyteCloudWorkspace, AirbyteConnectionTableProps, DagsterAirbyteTranslator, build_airbyte_assets_definitions
 from dagster_dbt import DagsterDbtTranslator as _DbtTranslatorBase, DbtCliResource, dbt_assets
 from dotenv import load_dotenv
@@ -28,7 +28,7 @@ class _GithubAirbyteTranslator(DagsterAirbyteTranslator):
             key=AssetKey(["raw", props.table_name]),
             group_name="github_pipeline",
             deps=[AssetKey("github_extraction")],
-            automation_condition=AutomationCondition.eager(),
+            automation_condition=AutomationCondition.on_cron("30 6 * * *"),
         )
 
 
@@ -70,10 +70,13 @@ def github_analytics_dbt_assets(context: AssetExecutionContext, dbt: DbtCliResou
 # Extraction asset
 # ---------------------------------------------------------------------------
 @asset(
+    partitions_def=DailyPartitionsDefinition(start_date="2026-04-25", end_offset=1),
     group_name="github_pipeline",
+    automation_condition=AutomationCondition.on_cron("0 6 * * *"),
     description="Extract GitHub repos, pull requests, and issues via the Search API and upload to S3.",
 )
 def github_extraction(context: AssetExecutionContext) -> None:
+    partition_date = context.partition_key  # "YYYY-MM-DD"
     # Re-insert path in case this step runs in a Dagster subprocess
     _di = str(_REPO_ROOT / "data_integration")
     if _di not in sys.path:
@@ -87,7 +90,7 @@ def github_extraction(context: AssetExecutionContext) -> None:
         github_token=settings.github_token,
         github_api_url=settings.github_api_url,
         resources=["repositories", "pull_requests", "issues"],
-        since=settings.since,
+        date=partition_date,
         per_page=settings.per_page,
         max_pages=settings.max_pages,
         output_dir=settings.output_dir,
