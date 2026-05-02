@@ -43,7 +43,7 @@ airbyte_assets = build_airbyte_assets_definitions(
 )
 
 # ---------------------------------------------------------------------------
-# dbt resource + manifest — relative to cwd (repo root both locally and on Dagster Cloud)
+# dbt resource + manifest
 # ---------------------------------------------------------------------------
 dbt_project_dir = Path("data_transformation") / "github_analytics"
 dbt_resource = DbtCliResource(project_dir=os.fspath(dbt_project_dir))
