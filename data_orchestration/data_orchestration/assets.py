@@ -8,7 +8,10 @@ from dagster_dbt import DagsterDbtTranslator as _DbtTranslatorBase, DbtCliResour
 from dotenv import load_dotenv
 
 # Load env vars (local only — Dagster Cloud uses UI env vars)
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+# On Cloud, __file__ is in site-packages so parents[2] is wrong; fall back to cwd
+# (dagster_cloud.yaml sets working_directory: . which makes cwd = repo root on Cloud)
+_file_based_root = Path(__file__).resolve().parents[2]
+_REPO_ROOT = _file_based_root if (_file_based_root / "data_transformation").exists() else Path(os.getcwd())
 load_dotenv(_REPO_ROOT / "data_integration" / ".env")
 load_dotenv(_REPO_ROOT / "data_orchestration" / ".env")
 
