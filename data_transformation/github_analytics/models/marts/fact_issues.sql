@@ -1,4 +1,4 @@
-7-- One row per issue
+-- One row per issue
 select
     {{ dbt_utils.generate_surrogate_key(['issue_id', 'run_id']) }}  as issue_snapshot_id,
 
