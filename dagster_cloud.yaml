@@ -1,0 +1,7 @@
+locations:
+  - location_name: data_orchestration
+    code_source:
+      python_file: data_orchestration/data_orchestration/definitions.py
+    working_directory: data_orchestration
+    build:
+      directory: data_orchestration

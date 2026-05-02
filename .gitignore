@@ -1,7 +1,17 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[codz]
-*$py.class
+
+# Dagster temporary home directories
+.tmp_dagster_home_*/
+
+# Local output data (written to S3, not needed in repo)
+data_integration/output/
+data_orchestration/data_integration/
+
+# Environment files with secrets
+.env
+
+
 
 # C extensions
 *.so
