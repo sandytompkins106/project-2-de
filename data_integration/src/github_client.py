@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 import requests
+from loguru import logger
 
 
 class GitHubAPIError(RuntimeError):
@@ -71,6 +72,7 @@ class GitHubClient:
                 if attempt == self.max_retries:
                     break
 
+                logger.warning("Retrying in {}s (attempt {}/{}) status={}", sleep_for, attempt, self.max_retries, response.status_code)
                 time.sleep(sleep_for)
                 backoff_seconds = min(backoff_seconds * 2, 32)
                 continue
@@ -95,16 +97,16 @@ class GitHubClient:
 
         return remaining_int, reset_utc
 
-    def fetch_resource(self, resource: str, since: str, max_pages: int = 2) -> ResourceResult:
+    def fetch_resource(self, resource: str, date: str, max_pages: int = 2) -> ResourceResult:
         if resource == "repositories":
             path = "/search/repositories"
-            query = f"created:>={since}"
+            query = f"created:{date}..{date} language:python stars:>=5"
         elif resource == "pull_requests":
             path = "/search/issues"
-            query = f"type:pr created:>={since}"
+            query = f"type:pr created:{date}..{date} language:python"
         elif resource == "issues":
             path = "/search/issues"
-            query = f"type:issue created:>={since}"
+            query = f"type:issue created:{date}..{date} language:python"
         else:
             raise ValueError(
                 "Unsupported resource. Choose repositories, pull_requests, or issues."
@@ -131,6 +133,7 @@ class GitHubClient:
 
             body = response.json()
             items = body.get("items", [])
+            logger.debug("page={} items={} rate_limit_remaining={}", page, len(items), remaining)
             if not items:
                 break
             all_items.extend(items)

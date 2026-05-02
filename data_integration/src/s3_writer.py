@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
+from loguru import logger
 
 
 def upload_jsonl(content: str, bucket: str, key: str, region: str) -> str:
@@ -14,6 +15,7 @@ def upload_jsonl(content: str, bucket: str, key: str, region: str) -> str:
     """
     try:
         client = boto3.client("s3", region_name=region)
+        logger.debug("Uploading to s3://{}/{}", bucket, key)
         client.put_object(
             Bucket=bucket,
             Key=key,
