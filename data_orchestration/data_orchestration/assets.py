@@ -1,5 +1,4 @@
 import os
-import sys
 from pathlib import Path
 
 from dagster import (
@@ -100,13 +99,8 @@ def github_analytics_dbt_assets(context: AssetExecutionContext, dbt: DbtCliResou
 )
 def github_extraction(context: AssetExecutionContext) -> None:
     partition_date = context.partition_key  # "YYYY-MM-DD"
-    # Re-insert path in case this step runs in a Dagster subprocess
-    _di = str(_REPO_ROOT / "data_integration")
-    if _di not in sys.path:
-        sys.path.insert(0, _di)
-
-    from src.config import get_settings
-    from src.pipeline import run_phase1_extraction
+    from data_integration.config import get_settings
+    from data_integration.pipeline import run_phase1_extraction
 
     settings = get_settings()
     summary = run_phase1_extraction(

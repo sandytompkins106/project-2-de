@@ -14,6 +14,7 @@ dependencies = [
     "python-dotenv",
     "boto3>=1.34.0",
     "dagster-airbyte",
+    "loguru>=0.7",
 ]
 
 [project.optional-dependencies]
@@ -25,6 +26,9 @@ dev = [
 [build-system]
 requires = ["hatchling>=1.19.0"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["data_orchestration", "data_integration"]
 
 [tool.dagster]
 module_name = "data_orchestration.definitions"
