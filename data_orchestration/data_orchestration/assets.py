@@ -41,6 +41,7 @@ def _resolve_dbt_project_dir() -> Path:
     # Cloud fallback: working_directory in dagster_cloud.yaml is set to repo root
     return (Path.cwd() / "data_transformation" / "github_analytics").resolve()
 
+
 _AIRBYTE_CONNECTION_ID = os.getenv("AIRBYTE_CONNECTION_ID", "")
 _AIRBYTE_CLIENT_ID = os.getenv("AIRBYTE_CLIENT_ID", "")
 _AIRBYTE_CLIENT_SECRET = os.getenv("AIRBYTE_CLIENT_SECRET", "")
