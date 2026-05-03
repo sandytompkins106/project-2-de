@@ -2,9 +2,23 @@ import os
 import sys
 from pathlib import Path
 
-from dagster import AssetExecutionContext, AssetKey, AssetSpec, AutomationCondition, DailyPartitionsDefinition, EnvVar, asset
-from dagster_airbyte import AirbyteCloudWorkspace, AirbyteConnectionTableProps, DagsterAirbyteTranslator, build_airbyte_assets_definitions
-from dagster_dbt import DagsterDbtTranslator as _DbtTranslatorBase, DbtCliResource, dbt_assets
+from dagster import (
+    AssetExecutionContext,
+    AssetKey,
+    AssetSpec,
+    AutomationCondition,
+    DailyPartitionsDefinition,
+    EnvVar,
+    asset,
+)
+from dagster_airbyte import (
+    AirbyteCloudWorkspace,
+    AirbyteConnectionTableProps,
+    DagsterAirbyteTranslator,
+    build_airbyte_assets_definitions,
+)
+from dagster_dbt import DagsterDbtTranslator as _DbtTranslatorBase
+from dagster_dbt import DbtCliResource, dbt_assets
 from dotenv import load_dotenv
 
 # Load env vars (local only — Dagster Cloud uses UI env vars)
@@ -15,6 +29,7 @@ load_dotenv(_REPO_ROOT / "data_orchestration" / ".env")
 _AIRBYTE_CONNECTION_ID = os.getenv("AIRBYTE_CONNECTION_ID", "")
 _AIRBYTE_CLIENT_ID = os.getenv("AIRBYTE_CLIENT_ID", "")
 _AIRBYTE_CLIENT_SECRET = os.getenv("AIRBYTE_CLIENT_SECRET", "")
+
 
 # ---------------------------------------------------------------------------
 # Airbyte workspace + assets (auto-discovers synced tables from the connection)
@@ -50,9 +65,7 @@ dbt_project_dir = (_REPO_ROOT / "data_transformation" / "github_analytics").reso
 dbt_resource = DbtCliResource(project_dir=os.fspath(dbt_project_dir))
 
 dbt_manifest_path = (
-    dbt_resource.cli(["--quiet", "parse"], target_path=Path("target"))
-    .wait()
-    .target_path.joinpath("manifest.json")
+    dbt_resource.cli(["--quiet", "parse"], target_path=Path("target")).wait().target_path.joinpath("manifest.json")
 )
 
 
@@ -65,8 +78,8 @@ class _EagerDbtTranslator(_DbtTranslatorBase):
 
 @dbt_assets(manifest=dbt_manifest_path, dagster_dbt_translator=_EagerDbtTranslator())
 def github_analytics_dbt_assets(context: AssetExecutionContext, dbt: DbtCliResource):
-    """Run all dbt models in the github_analytics project."""
-    yield from dbt.cli(["run"], context=context).stream()
+    """Build all dbt models and run tests in the github_analytics project."""
+    yield from dbt.cli(["build"], context=context).stream()
 
 
 # ---------------------------------------------------------------------------
@@ -102,8 +115,4 @@ def github_extraction(context: AssetExecutionContext) -> None:
         aws_region=settings.aws_region,
     )
     for resource, info in summary["resources"].items():
-        context.log.info(
-            f"{resource}: {info['records']} records → {info.get('s3_data_uri', 'local only')}"
-        )
-
-
+        context.log.info(f"{resource}: {info['records']} records → {info.get('s3_data_uri', 'local only')}")

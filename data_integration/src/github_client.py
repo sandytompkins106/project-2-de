@@ -75,10 +75,7 @@ class GitHubClient:
 
             # 429 and 5xx are retriable; rate-limit exhausted is also retriable.
             retriable = response.status_code in {429, 500, 502, 503, 504}
-            exhausted = (
-                response.status_code == 403
-                and response.headers.get("X-RateLimit-Remaining") == "0"
-            )
+            exhausted = response.status_code == 403 and response.headers.get("X-RateLimit-Remaining") == "0"
             if retriable or exhausted:
                 reset_epoch = response.headers.get("X-RateLimit-Reset")
                 if exhausted and reset_epoch and reset_epoch.isdigit():
@@ -89,18 +86,20 @@ class GitHubClient:
                 if attempt == self.max_retries:
                     break
 
-                logger.warning("Retrying in {}s (attempt {}/{}) status={}", sleep_for, attempt, self.max_retries, response.status_code)
+                logger.warning(
+                    "Retrying in {}s (attempt {}/{}) status={}",
+                    sleep_for,
+                    attempt,
+                    self.max_retries,
+                    response.status_code,
+                )
                 time.sleep(sleep_for)
                 backoff_seconds = min(backoff_seconds * 2, 32)
                 continue
 
-            raise GitHubAPIError(
-                f"GitHub API error {response.status_code}: {response.text[:500]}"
-            )
+            raise GitHubAPIError(f"GitHub API error {response.status_code}: {response.text[:500]}")
 
-        raise GitHubAPIError(
-            f"GitHub API failed after {self.max_retries} retries for path={path}"
-        )
+        raise GitHubAPIError(f"GitHub API failed after {self.max_retries} retries for path={path}")
 
     def _extract_rate_limit(self, response: requests.Response) -> tuple[int | None, str | None]:
         """Parse rate-limit headers from a GitHub API response.
@@ -149,9 +148,7 @@ class GitHubClient:
             path = "/search/issues"
             query = f"type:issue created:{date}..{date} language:python"
         else:
-            raise ValueError(
-                "Unsupported resource. Choose repositories, pull_requests, or issues."
-            )
+            raise ValueError("Unsupported resource. Choose repositories, pull_requests, or issues.")
 
         all_items: list[dict[str, Any]] = []
         request_count = 0

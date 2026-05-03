@@ -9,9 +9,7 @@ from .pipeline import run_phase1_extraction
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Phase 1 GitHub extraction validation (local output)."
-    )
+    parser = argparse.ArgumentParser(description="Phase 1 GitHub extraction validation (local output).")
     parser.add_argument(
         "--resources",
         default="repositories,pull_requests,issues",

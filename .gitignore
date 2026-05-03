@@ -5,13 +5,14 @@ __pycache__/
 .tmp_dagster_home_*/
 
 # Local output data (written to S3, not needed in repo)
-data_integration/output/
+data_integration/data_integration/output/
 data_orchestration/data_integration/
 
 # Environment files with secrets
 .env
 
-
+# VS Code settings folder
+.vscode/
 
 # C extensions
 *.so
