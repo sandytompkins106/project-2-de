@@ -3,6 +3,9 @@ version: 2
 models:
   - name: stg_github__repositories
     description: "Staged repository records unpacked from Airbyte RAW VARIANT column"
+    tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
     columns:
       - name: airbyte_raw_id
         tests:
@@ -25,6 +28,10 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 5
+              strictly: false
+              # Enforces our API search filter: language:python stars:>=5
       - name: forks_count
         tests:
           - dbt_utils.expression_is_true:
@@ -47,6 +54,11 @@ models:
       - name: author_login
         tests:
           - not_null
+      - name: title
+        tests:
+          - dbt_expectations.expect_column_value_lengths_to_be_between:
+              min_value: 1
+              max_value: 500
       - name: comments_count
         tests:
           - dbt_utils.expression_is_true:
@@ -69,6 +81,11 @@ models:
       - name: author_login
         tests:
           - not_null
+      - name: title
+        tests:
+          - dbt_expectations.expect_column_value_lengths_to_be_between:
+              min_value: 1
+              max_value: 500
       - name: comments_count
         tests:
           - dbt_utils.expression_is_true:

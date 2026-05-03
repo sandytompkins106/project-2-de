@@ -1,0 +1,6 @@
+# Dev dependencies — install with: pip install -r requirements-dev.txt
+pytest>=8.0
+black>=24.0
+ruff>=0.4
+great-expectations>=1.0
+pandas>=2.0
