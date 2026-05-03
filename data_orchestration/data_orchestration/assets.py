@@ -26,20 +26,9 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(_REPO_ROOT / "data_integration" / ".env")
 load_dotenv(_REPO_ROOT / "data_orchestration" / ".env")
 
-
-def _resolve_dbt_project_dir() -> Path:
-    """Resolve the dbt project directory for both local dev and Dagster+ cloud.
-
-    Locally, __file__ is inside the source tree so parents[2] is the repo root.
-    In Dagster+ serverless the package is installed into a venv, so we fall back
-    to Path.cwd() which is set to the repo root via working_directory in
-    dagster_cloud.yaml.
-    """
-    candidate = _REPO_ROOT / "data_transformation" / "github_analytics"
-    if candidate.exists():
-        return candidate.resolve()
-    # Cloud fallback: working_directory in dagster_cloud.yaml is set to repo root
-    return (Path.cwd() / "data_transformation" / "github_analytics").resolve()
+# dbt project is embedded inside this package so __file__-relative path works
+# in both local dev (source tree) and Dagster+ cloud (installed pex venv).
+_DBT_PROJECT_DIR = (Path(__file__).parent / "github_analytics").resolve()
 
 
 _AIRBYTE_CONNECTION_ID = os.getenv("AIRBYTE_CONNECTION_ID", "")
@@ -77,7 +66,7 @@ airbyte_assets = build_airbyte_assets_definitions(
 # ---------------------------------------------------------------------------
 # dbt resource + manifest
 # ---------------------------------------------------------------------------
-dbt_project_dir = _resolve_dbt_project_dir()
+dbt_project_dir = _DBT_PROJECT_DIR
 dbt_resource = DbtCliResource(project_dir=os.fspath(dbt_project_dir))
 
 dbt_manifest_path = (
