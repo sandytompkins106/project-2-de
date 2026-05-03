@@ -24,6 +24,8 @@ class ResourceResult:
 
 
 class GitHubClient:
+    """HTTP client for the GitHub Search API with retry and rate-limit handling."""
+
     def __init__(
         self,
         base_url: str,
@@ -32,6 +34,15 @@ class GitHubClient:
         timeout_seconds: int = 30,
         max_retries: int = 5,
     ) -> None:
+        """Initialise the client and configure the shared requests Session.
+
+        Args:
+            base_url: GitHub API root, e.g. ``https://api.github.com``.
+            token: Personal access token used for Bearer auth.
+            per_page: Number of results requested per API page (max 100).
+            timeout_seconds: Per-request socket timeout.
+            max_retries: Maximum number of retry attempts for transient errors.
+        """
         self.base_url = base_url.rstrip("/")
         self.per_page = per_page
         self.timeout_seconds = timeout_seconds
@@ -48,6 +59,12 @@ class GitHubClient:
             self.session.headers["Authorization"] = f"Bearer {token}"
 
     def _request(self, path: str, params: dict[str, Any]) -> requests.Response:
+        """Send a GET request with exponential back-off on retriable errors.
+
+        Retries on HTTP 429, 5xx, and rate-limit-exhausted 403 responses.
+        Raises ``GitHubAPIError`` on non-retriable errors or after all retries
+        are exhausted.
+        """
         url = f"{self.base_url}{path}"
         backoff_seconds = 1.0
 
@@ -86,6 +103,13 @@ class GitHubClient:
         )
 
     def _extract_rate_limit(self, response: requests.Response) -> tuple[int | None, str | None]:
+        """Parse rate-limit headers from a GitHub API response.
+
+        Returns:
+            A tuple of ``(remaining, reset_utc)`` where *remaining* is the
+            number of requests left in the current window and *reset_utc* is
+            the ISO-8601 timestamp at which the window resets.
+        """
         remaining = response.headers.get("X-RateLimit-Remaining")
         reset_epoch = response.headers.get("X-RateLimit-Reset")
 
@@ -98,6 +122,23 @@ class GitHubClient:
         return remaining_int, reset_utc
 
     def fetch_resource(self, resource: str, date: str, max_pages: int = 2) -> ResourceResult:
+        """Fetch all items for a given resource type on a specific date.
+
+        Paginates through the GitHub Search API up to *max_pages* pages and
+        deduplicates results by item ``id`` (the API can return duplicates when
+        results shift between page fetches with ``sort=updated``).
+
+        Args:
+            resource: One of ``"repositories"``, ``"pull_requests"``, or
+                ``"issues"``.
+            date: ISO date string (``YYYY-MM-DD``) used as both the start and
+                end of the ``created:`` search filter.
+            max_pages: Maximum number of result pages to fetch.
+
+        Returns:
+            A :class:`ResourceResult` containing deduplicated items and
+            request metadata.
+        """
         if resource == "repositories":
             path = "/search/repositories"
             query = f"created:{date}..{date} language:python stars:>=5"

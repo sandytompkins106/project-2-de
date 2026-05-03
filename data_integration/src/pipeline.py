@@ -14,6 +14,11 @@ from .s3_writer import upload_jsonl
 
 
 def _local_output_prefix(base_dir: str, resource: str, run_id: str, now_utc: datetime) -> Path:
+    """Build the local directory path for a resource's output files.
+
+    Partitions output using a Hive-style layout:
+    ``<base_dir>/raw/github/<resource>/year=YYYY/month=MM/day=DD/run_id=<uuid>/``
+    """
     return (
         Path(base_dir)
         / "raw"
@@ -27,6 +32,7 @@ def _local_output_prefix(base_dir: str, resource: str, run_id: str, now_utc: dat
 
 
 def _write_local_jsonl(records: list[dict[str, Any]], out_path: Path) -> None:
+    """Write a list of records to a JSONL file, creating parent directories as needed."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8") as handle:
         for record in records:
@@ -46,6 +52,29 @@ def run_phase1_extraction(
     s3_prefix: str = "raw/github",
     aws_region: str = "ap-southeast-2",
 ) -> dict[str, Any]:
+    """Extract GitHub repositories, pull requests, and issues for a single date.
+
+    For each resource, fetches data from the GitHub Search API, enriches each
+    record with run metadata, writes a local JSONL file, and optionally uploads
+    to S3.  A JSON manifest summarising the run is written alongside the data.
+
+    Args:
+        github_token: GitHub personal access token.
+        github_api_url: Base URL for the GitHub API.
+        resources: List of resource types to extract (``repositories``,
+            ``pull_requests``, ``issues``).
+        date: ISO date string (``YYYY-MM-DD``) for the extraction window.
+        per_page: Number of results per API page.
+        max_pages: Maximum pages to fetch per resource.
+        output_dir: Local base directory for JSONL output.
+        s3_bucket: S3 bucket name; upload is skipped when empty.
+        s3_prefix: S3 key prefix for uploaded files.
+        aws_region: AWS region for the S3 client.
+
+    Returns:
+        A summary dict keyed by resource name containing record counts, file
+        paths, and rate-limit metadata.
+    """
     run_id = str(uuid.uuid4())
     now_utc = datetime.now(timezone.utc)
     logger.info("Starting extraction | date={} run_id={}", date, run_id)
