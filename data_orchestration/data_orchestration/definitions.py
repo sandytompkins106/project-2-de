@@ -1,3 +1,8 @@
+"""Dagster Definitions for the GitHub analytics pipeline.
+
+Wires together all assets (extraction, Airbyte sync, dbt models), the
+automation sensor that drives them, and the dbt + Airbyte resources.
+"""
 from dagster import (
     AutomationConditionSensorDefinition,
     DefaultSensorStatus,

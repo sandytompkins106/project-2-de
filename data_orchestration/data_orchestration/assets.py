@@ -57,12 +57,15 @@ dbt_manifest_path = (
 
 
 class _EagerDbtTranslator(_DbtTranslatorBase):
+    """dbt translator that applies AutomationCondition.eager() to every dbt asset."""
+
     def get_automation_condition(self, dbt_resource_props):
         return AutomationCondition.eager()
 
 
 @dbt_assets(manifest=dbt_manifest_path, dagster_dbt_translator=_EagerDbtTranslator())
 def github_analytics_dbt_assets(context: AssetExecutionContext, dbt: DbtCliResource):
+    """Run all dbt models in the github_analytics project."""
     yield from dbt.cli(["run"], context=context).stream()
 
 
