@@ -69,6 +69,8 @@ airbyte_assets = build_airbyte_assets_definitions(
 dbt_project_dir = _DBT_PROJECT_DIR
 dbt_resource = DbtCliResource(project_dir=os.fspath(dbt_project_dir))
 
+# Install dbt packages then generate manifest (runs at code-location load time)
+dbt_resource.cli(["deps"], target_path=Path("target")).wait()
 dbt_manifest_path = (
     dbt_resource.cli(["--quiet", "parse"], target_path=Path("target")).wait().target_path.joinpath("manifest.json")
 )
