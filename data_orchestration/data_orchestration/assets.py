@@ -26,6 +26,11 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(_REPO_ROOT / "data_integration" / ".env")
 load_dotenv(_REPO_ROOT / "data_orchestration" / ".env")
 
+# dbt project is embedded inside this package so __file__-relative path works
+# in both local dev (source tree) and Dagster+ cloud (installed pex venv).
+_DBT_PROJECT_DIR = (Path(__file__).parent / "github_analytics").resolve()
+
+
 _AIRBYTE_CONNECTION_ID = os.getenv("AIRBYTE_CONNECTION_ID", "")
 _AIRBYTE_CLIENT_ID = os.getenv("AIRBYTE_CLIENT_ID", "")
 _AIRBYTE_CLIENT_SECRET = os.getenv("AIRBYTE_CLIENT_SECRET", "")
@@ -61,9 +66,11 @@ airbyte_assets = build_airbyte_assets_definitions(
 # ---------------------------------------------------------------------------
 # dbt resource + manifest
 # ---------------------------------------------------------------------------
-dbt_project_dir = (_REPO_ROOT / "data_transformation" / "github_analytics").resolve()
+dbt_project_dir = _DBT_PROJECT_DIR
 dbt_resource = DbtCliResource(project_dir=os.fspath(dbt_project_dir))
 
+# Install dbt packages then generate manifest (runs at code-location load time)
+dbt_resource.cli(["deps"], target_path=Path("target")).wait()
 dbt_manifest_path = (
     dbt_resource.cli(["--quiet", "parse"], target_path=Path("target")).wait().target_path.joinpath("manifest.json")
 )
