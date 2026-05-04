@@ -5,8 +5,7 @@ __pycache__/
 .tmp_dagster_home_*/
 
 # Local output data (written to S3, not needed in repo)
-data_integration/data_integration/output/
-data_orchestration/data_integration/
+data_folders/data_integration/output/
 
 # Environment files with secrets
 .env

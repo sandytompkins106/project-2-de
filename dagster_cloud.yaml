@@ -2,6 +2,6 @@ locations:
   - location_name: data_orchestration
     code_source:
       module_name: data_orchestration.definitions
-    working_directory: data_orchestration
+    working_directory: data_folders
     build:
-      directory: data_orchestration
+      directory: data_folders

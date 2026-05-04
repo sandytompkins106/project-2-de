@@ -7,8 +7,8 @@ import re
 from pathlib import Path
 from unittest.mock import patch
 
-from src.github_client import ResourceResult
-from src.pipeline import run_phase1_extraction
+from data_integration.github_client import ResourceResult
+from data_integration.pipeline import run_phase1_extraction
 
 
 def _make_result(resource: str, items: list) -> ResourceResult:
@@ -35,7 +35,7 @@ def _side_effect(resource: str, date: str, max_pages: int = 2) -> ResourceResult
 
 class TestRunPhase1Extraction:
     def test_creates_local_jsonl_file(self, tmp_path: Path) -> None:
-        with patch("src.pipeline.GitHubClient") as mock_cls:
+        with patch("data_integration.pipeline.GitHubClient") as mock_cls:
             mock_cls.return_value.fetch_resource.side_effect = _side_effect
             result = run_phase1_extraction(
                 github_token="token",
@@ -50,7 +50,7 @@ class TestRunPhase1Extraction:
         assert data_file.exists()
 
     def test_jsonl_contains_enrichment_fields(self, tmp_path: Path) -> None:
-        with patch("src.pipeline.GitHubClient") as mock_cls:
+        with patch("data_integration.pipeline.GitHubClient") as mock_cls:
             mock_cls.return_value.fetch_resource.side_effect = _side_effect
             result = run_phase1_extraction(
                 github_token="token",
@@ -69,7 +69,7 @@ class TestRunPhase1Extraction:
         assert record["payload"]["id"] == 1
 
     def test_s3_skipped_when_no_bucket(self, tmp_path: Path) -> None:
-        with patch("src.pipeline.GitHubClient") as mock_cls:
+        with patch("data_integration.pipeline.GitHubClient") as mock_cls:
             mock_cls.return_value.fetch_resource.side_effect = _side_effect
             result = run_phase1_extraction(
                 github_token="token",
@@ -84,7 +84,7 @@ class TestRunPhase1Extraction:
         assert result["resources"]["repositories"]["s3_data_uri"] is None
 
     def test_all_three_resources_extracted(self, tmp_path: Path) -> None:
-        with patch("src.pipeline.GitHubClient") as mock_cls:
+        with patch("data_integration.pipeline.GitHubClient") as mock_cls:
             mock_cls.return_value.fetch_resource.side_effect = _side_effect
             result = run_phase1_extraction(
                 github_token="token",
@@ -98,7 +98,7 @@ class TestRunPhase1Extraction:
         assert set(result["resources"].keys()) == {"repositories", "pull_requests", "issues"}
 
     def test_run_id_is_uuid(self, tmp_path: Path) -> None:
-        with patch("src.pipeline.GitHubClient") as mock_cls:
+        with patch("data_integration.pipeline.GitHubClient") as mock_cls:
             mock_cls.return_value.fetch_resource.side_effect = _side_effect
             result = run_phase1_extraction(
                 github_token="token",
@@ -115,7 +115,7 @@ class TestRunPhase1Extraction:
         )
 
     def test_manifest_written_alongside_data(self, tmp_path: Path) -> None:
-        with patch("src.pipeline.GitHubClient") as mock_cls:
+        with patch("data_integration.pipeline.GitHubClient") as mock_cls:
             mock_cls.return_value.fetch_resource.side_effect = _side_effect
             result = run_phase1_extraction(
                 github_token="token",
