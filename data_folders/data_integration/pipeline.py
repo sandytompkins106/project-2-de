@@ -115,8 +115,11 @@ def run_phase1_extraction(
         # S3 upload (optional — skipped when s3_bucket is empty)
         s3_data_uri: str | None = None
         if s3_bucket:
+            partition_dt = datetime.fromisoformat(date)
             s3_key = (
-                f"{s3_prefix}/{resource}" f"/year={now_utc:%Y}/month={now_utc:%m}/day={now_utc:%d}" f"/part-00001.jsonl"
+                f"{s3_prefix}/{resource}"
+                f"/year={partition_dt:%Y}/month={partition_dt:%m}/day={partition_dt:%d}"
+                f"/part-00001.jsonl"
             )
             jsonl_content = "\n".join(json.dumps(r, default=str) for r in enriched)
             s3_data_uri = upload_jsonl(jsonl_content, s3_bucket, s3_key, aws_region)
