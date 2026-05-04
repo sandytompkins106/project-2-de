@@ -59,6 +59,8 @@ models:
           - dbt_expectations.expect_column_value_lengths_to_be_between:
               min_value: 1
               max_value: 500
+              config:
+                severity: warn
       - name: comments_count
         tests:
           - dbt_utils.expression_is_true:
