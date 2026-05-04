@@ -22,8 +22,7 @@ from dotenv import load_dotenv
 
 # Load env vars (local only — Dagster Cloud uses UI env vars)
 _REPO_ROOT = Path(__file__).resolve().parents[2]
-load_dotenv(_REPO_ROOT / "data_integration" / ".env")
-load_dotenv(_REPO_ROOT / "data_orchestration" / ".env")
+load_dotenv(_REPO_ROOT / "data_folders" / ".env")
 
 # dbt project is embedded inside this package so __file__-relative path works
 # in both local dev (source tree) and Dagster+ cloud (installed pex venv).
