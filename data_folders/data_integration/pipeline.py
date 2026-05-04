@@ -118,7 +118,7 @@ def run_phase1_extraction(
             s3_key = (
                 f"{s3_prefix}/{resource}"
                 f"/year={now_utc:%Y}/month={now_utc:%m}/day={now_utc:%d}"
-                f"/run_id={run_id}/part-00001.jsonl"
+                f"/part-00001.jsonl"
             )
             jsonl_content = "\n".join(json.dumps(r, default=str) for r in enriched)
             s3_data_uri = upload_jsonl(jsonl_content, s3_bucket, s3_key, aws_region)
