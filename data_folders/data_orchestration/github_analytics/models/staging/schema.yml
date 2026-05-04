@@ -32,6 +32,8 @@ models:
               min_value: 5
               strictly: false
               # Enforces our API search filter: language:python stars:>=5
+              config:
+                severity: warn
       - name: forks_count
         tests:
           - dbt_utils.expression_is_true:

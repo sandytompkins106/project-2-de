@@ -1,3 +1,5 @@
+![alt text](images/readme_images/github_image.png)
+
 # GitHub Analytics Pipeline
 
 ## Objective
@@ -234,17 +236,10 @@ dbt packages used: `dbt_utils`, `dbt_expectations`
 3. Build charts from the mart tables (trending repos, developer activity, community health)
 4. Add charts to a dashboard
 
-Capstone project for building a managed-cloud batch data engineering pipeline focused on GitHub analytics.
-
-## Current Status
-
-Phase 1 implementation is in progress and includes direct GitHub API extraction validation before Airbyte ingestion.
-
-Implemented module:
-
-- data_integration/src (GitHub extraction local validation)
-
 ## Phase 1 Quick Start
+
+Testing direct GitHub API extraction validation before Airbyte ingestion.
+
 
 1. Install dependencies:
 
