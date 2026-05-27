@@ -2,8 +2,8 @@
 -- Analytics question: How healthy are repos? Are issues being engaged with?
 with repos as (
     select *
-    from {{ ref('stg_github__repositories') }}
-    QUALIFY ROW_NUMBER() OVER (PARTITION BY repo_id ORDER BY updated_at DESC) = 1
+    from {{ ref('dim_repos_snapshot') }}
+    where dbt_valid_to is null
 ),
 
 issue_counts as (
