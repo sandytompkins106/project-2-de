@@ -1,9 +1,9 @@
--- One row per unique repository (latest snapshot by updated_at)
-with ranked as (
-    select
-        *,
-        ROW_NUMBER() OVER (PARTITION BY repo_id ORDER BY updated_at DESC) as rn
-    from {{ ref('stg_github__repositories') }}
+-- One row per unique repository (latest snapshot by valid_from)
+with latest_snapshot as (
+    select *,
+        ROW_NUMBER() OVER (PARTITION BY repo_id ORDER BY valid_from DESC) as rn
+    from {{ ref('dim_repos_snapshot') }}
+    where valid_to is null
 )
 
 select
@@ -34,5 +34,5 @@ select
     created_at,
     updated_at,
     pushed_at
-from ranked
+from latest_snapshot
 where rn = 1

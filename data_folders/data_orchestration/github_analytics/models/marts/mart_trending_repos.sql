@@ -1,6 +1,3 @@
--- Trending repositories ranked by stars
--- Analytics question: Which repos are gaining traction? What languages dominate?
--- Deduplicates to latest snapshot per repo across all extraction runs
 select
     repo_id,
     full_name,
@@ -43,8 +40,7 @@ select
         WHEN stargazers_count >= 10   THEN 'low'
         ELSE 'minimal'
     END as star_tier
-
-from {{ ref('stg_github__repositories') }}
+from {{ ref('dim_repos_snapshot') }}
 where not is_archived
   and not is_disabled
-QUALIFY ROW_NUMBER() OVER (PARTITION BY repo_id ORDER BY updated_at DESC) = 1
+  and valid_to is null
