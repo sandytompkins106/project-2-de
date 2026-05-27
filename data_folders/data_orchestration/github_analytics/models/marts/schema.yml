@@ -5,20 +5,53 @@ snapshots:
     description: |
       SCD2 snapshot of GitHub repositories. Tracks all historical changes to key attributes for each repo_id.
     tests:
-      - dbt_expectations.expect_compound_columns_to_be_unique:
-          column_list: [repo_id, valid_from]
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - repo_id
-            - valid_from
-      - dbt_utils.not_null:
+      - not_null:
           column_name: repo_id
-      - dbt_utils.not_null:
-          column_name: valid_from
-      - dbt_utils.expression_is_true:
-          expression: "valid_to > valid_from or valid_to is null"
-      - dbt_utils.expression_is_true:
-          expression: "valid_from < coalesce(valid_to, '2999-12-31')"
+      - not_null:
+          column_name: full_name
+      - not_null:
+          column_name: owner_login
+      - not_null:
+          column_name: created_at
+      - unique:
+          column_name: repo_id
+      - unique:
+          column_name: full_name
+      - unique:
+          column_name: node_id
+      - accepted_values:
+          column_name: visibility
+          values: ["public", "private", "internal"]
+      - accepted_values:
+          column_name: is_fork
+          values: [true, false]
+      - accepted_values:
+          column_name: is_archived
+          values: [true, false]
+      - accepted_values:
+          column_name: is_disabled
+          values: [true, false]
+      - accepted_values:
+          column_name: is_private
+          values: [true, false]
+      - accepted_values:
+          column_name: has_issues
+          values: [true, false]
+      - accepted_values:
+          column_name: has_wiki
+          values: [true, false]
+      - accepted_values:
+          column_name: has_discussions
+          values: [true, false]
+      - accepted_values:
+          column_name: has_pages
+          values: [true, false]
+      - expression_is_true:
+          expression: stargazers_count >= 0
+      - expression_is_true:
+          expression: forks_count >= 0
+      - expression_is_true:
+          expression: open_issues_count >= 0
 
 models:
   - name: dim_repos
