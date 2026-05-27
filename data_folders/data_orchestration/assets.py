@@ -91,7 +91,7 @@ def github_analytics_dbt_assets(context: AssetExecutionContext, dbt: DbtCliResou
 # Extraction asset
 # ---------------------------------------------------------------------------
 @asset(
-    partitions_def=DailyPartitionsDefinition(start_date="2026-04-25", end_offset=1),
+    partitions_def=DailyPartitionsDefinition(start_date="2026-05-17", end_offset=1),
     group_name="github_pipeline",
     automation_condition=AutomationCondition.on_cron("0 6 * * *"),
     description="Extract GitHub repos, pull requests, and issues via the Search API and upload to S3.",
