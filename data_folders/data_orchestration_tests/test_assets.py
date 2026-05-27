@@ -1,6 +1,4 @@
-from dagster import AutomationCondition, DailyPartitionsDefinition
-from dagster._core.definitions.auto_materialize_policy import AutoMaterializePolicy
-
+from dagster import DailyPartitionsDefinition
 from data_orchestration.assets import (
     airbyte_assets,
     github_analytics_dbt_assets,
@@ -28,8 +26,9 @@ class TestGithubExtractionAsset:
         assert github_extraction.group_names_by_key[github_extraction.key] == "github_pipeline"
 
     def test_has_automation_condition(self):
-        assert github_extraction.auto_materialize_policy is not None or \
-               github_extraction.automation_condition is not None
+        assert (
+            github_extraction.auto_materialize_policy is not None or github_extraction.automation_condition is not None
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -47,6 +46,7 @@ class TestAirbyteAssets:
 
     def test_all_depend_on_github_extraction(self):
         from dagster import AssetKey
+
         for defn in airbyte_assets:
             for spec in defn.specs:
                 dep_keys = {dep.asset_key for dep in spec.deps}
@@ -76,4 +76,3 @@ class TestDbtAssets:
         }
         asset_names = {key.path[-1] for key in github_analytics_dbt_assets.keys}
         assert expected.issubset(asset_names)
-
