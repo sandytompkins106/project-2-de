@@ -4,6 +4,7 @@ Verifies structural properties — partition definitions, automation conditions,
 and translator behaviour — without executing any dbt or Airbyte commands.
 All external I/O (dbt CLI, manifest parsing) is mocked at module-import time.
 """
+
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -11,8 +12,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from dagster import AssetKey, AutomationCondition, DailyPartitionsDefinition
 
-
 # ─── helpers ─────────────────────────────────────────────────────────────────
+
 
 def _make_mock_dbt_resource():
     """Minimal mock that satisfies the two module-level dbt CLI calls in assets.py."""
@@ -25,6 +26,7 @@ def _make_mock_dbt_resource():
 
 
 # ─── module fixture ───────────────────────────────────────────────────────────
+
 
 @pytest.fixture(scope="module")
 def assets_mod():
@@ -43,10 +45,12 @@ def assets_mod():
         patch("dagster_dbt.dbt_assets", lambda **kw: (lambda fn: fn)),
     ):
         import data_orchestration.assets as mod  # noqa: PLC0415
+
         yield mod
 
 
 # ─── github_extraction: partition definition ─────────────────────────────────
+
 
 def test_github_extraction_uses_daily_partitions(assets_mod):
     """github_extraction must use a DailyPartitionsDefinition."""
@@ -64,6 +68,7 @@ def test_github_extraction_partition_start_date(assets_mod):
 
 # ─── github_extraction: automation condition ─────────────────────────────────
 
+
 def test_github_extraction_has_automation_condition(assets_mod):
     """github_extraction must declare an automation condition (cron-based)."""
     specs = list(assets_mod.github_extraction.specs)
@@ -79,6 +84,7 @@ def test_github_extraction_automation_condition_is_not_eager(assets_mod):
 
 # ─── github_extraction: group membership ─────────────────────────────────────
 
+
 def test_github_extraction_group_name(assets_mod):
     """github_extraction must belong to the github_pipeline asset group."""
     specs = list(assets_mod.github_extraction.specs)
@@ -86,6 +92,7 @@ def test_github_extraction_group_name(assets_mod):
 
 
 # ─── _EagerDbtTranslator ─────────────────────────────────────────────────────
+
 
 def test_eager_dbt_translator_returns_eager_condition(assets_mod):
     """_EagerDbtTranslator.get_automation_condition must return AutomationCondition.eager()."""
@@ -102,6 +109,7 @@ def test_eager_dbt_translator_any_resource_props(assets_mod):
 
 
 # ─── _GithubAirbyteTranslator ────────────────────────────────────────────────
+
 
 def _call_translator(assets_mod, table_name: str):
     """Helper: call _GithubAirbyteTranslator.get_asset_spec with a mocked props object."""
@@ -136,4 +144,3 @@ def test_airbyte_translator_depends_on_extraction(assets_mod):
     """Airbyte assets must declare github_extraction as an upstream dependency."""
     kwargs = _call_translator(assets_mod, "repositories")
     assert AssetKey("github_extraction") in kwargs["deps"]
-
