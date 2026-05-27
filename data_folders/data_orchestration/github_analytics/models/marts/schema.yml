@@ -138,3 +138,122 @@ models:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
               where: "hours_to_close is not null"
+
+  - name: mart_trending_repos
+    description: "Trending repos ranked by stars — one row per unique repo, latest snapshot"
+    tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+    columns:
+      - name: repo_id
+        tests:
+          - not_null
+          - unique
+      - name: full_name
+        tests:
+          - not_null
+      - name: stargazers_count
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: forks_count
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: star_tier
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['high', 'medium', 'low', 'minimal']
+
+  - name: mart_developer_activity
+    description: "Aggregated activity per developer — one row per owner"
+    tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+    columns:
+      - name: owner_login
+        tests:
+          - not_null
+          - unique
+      - name: repos_created
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 1"
+      - name: total_stars
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: avg_stars_per_repo
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+  - name: mart_community_health
+    description: "Community health scores per repository — one row per unique repo"
+    tests:
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 1
+    columns:
+      - name: repo_id
+        tests:
+          - not_null
+          - unique
+      - name: full_name
+        tests:
+          - not_null
+      - name: health_score
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+      - name: tracked_issues
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: tracked_prs
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: pr_merge_rate_pct
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+              config:
+                severity: warn
+
+snapshots:
+  - name: dim_repos_snapshot
+    description: |
+      SCD Type 2 snapshot of GitHub repositories. Tracks full historical change
+      history for key mutable attributes (stars, forks, language, description,
+      topics, flags) using the dbt check strategy.  Each time any of the
+      check_cols changes a new row is inserted and the previous row is closed
+      via dbt_valid_to.  dim_repos reads only dbt_valid_to IS NULL rows.
+    columns:
+      - name: repo_id
+        tests:
+          - not_null
+      - name: full_name
+        tests:
+          - not_null
+      - name: dbt_scd_id
+        tests:
+          - not_null
+          - unique
+      - name: dbt_valid_from
+        tests:
+          - not_null
+      - name: stargazers_count
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: forks_count
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"

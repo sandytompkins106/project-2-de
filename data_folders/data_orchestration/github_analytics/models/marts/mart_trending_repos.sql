@@ -44,7 +44,7 @@ select
         ELSE 'minimal'
     END as star_tier
 
-from {{ ref('stg_github__repositories') }}
-where not is_archived
+from {{ ref('dim_repos_snapshot') }}
+where dbt_valid_to is null
+  and not is_archived
   and not is_disabled
-QUALIFY ROW_NUMBER() OVER (PARTITION BY repo_id ORDER BY updated_at DESC) = 1

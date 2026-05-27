@@ -1,9 +1,10 @@
--- One row per unique repository (latest snapshot by updated_at)
-with ranked as (
-    select
-        *,
-        ROW_NUMBER() OVER (PARTITION BY repo_id ORDER BY updated_at DESC) as rn
-    from {{ ref('stg_github__repositories') }}
+-- One row per unique repository — powered by the SCD2 dim_repos_snapshot.
+-- Only the currently-active row is returned (dbt_valid_to IS NULL).
+-- Historical rows remain in the snapshot table for time-travel analysis.
+with current_repos as (
+    select *
+    from {{ ref('dim_repos_snapshot') }}
+    where dbt_valid_to is null
 )
 
 select
@@ -34,5 +35,4 @@ select
     created_at,
     updated_at,
     pushed_at
-from ranked
-where rn = 1
+from current_repos

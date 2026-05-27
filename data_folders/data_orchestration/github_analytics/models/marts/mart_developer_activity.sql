@@ -2,9 +2,9 @@
 -- Analytics question: Who are the most active developers? What do they build?
 with latest_repos as (
     select *
-    from {{ ref('stg_github__repositories') }}
-    where owner_login is not null
-    QUALIFY ROW_NUMBER() OVER (PARTITION BY repo_id ORDER BY updated_at DESC) = 1
+    from {{ ref('dim_repos_snapshot') }}
+    where dbt_valid_to is null
+      and owner_login is not null
 )
 
 select
