@@ -1,10 +1,11 @@
 -- Developer activity: repo creation patterns and engagement per owner
 -- Analytics question: Who are the most active developers? What do they build?
+
 with latest_repos as (
     select *
-    from {{ ref('stg_github__repositories') }}
+    from {{ ref('dim_repos_snapshot') }}
     where owner_login is not null
-    QUALIFY ROW_NUMBER() OVER (PARTITION BY repo_id ORDER BY updated_at DESC) = 1
+      and valid_to is null
 )
 
 select

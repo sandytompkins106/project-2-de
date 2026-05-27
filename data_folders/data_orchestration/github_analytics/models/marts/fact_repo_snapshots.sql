@@ -22,5 +22,6 @@ select
     open_issues_count,
     size_kb,
     search_score
-from {{ ref('stg_github__repositories') }}
+from {{ ref('dim_repos_snapshot') }}
+where valid_to is null
 QUALIFY ROW_NUMBER() OVER (PARTITION BY repo_id, run_id ORDER BY extracted_at DESC) = 1

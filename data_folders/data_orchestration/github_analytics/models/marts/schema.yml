@@ -1,5 +1,28 @@
 version: 2
 
+snapshots:
+  - name: dim_repos_snapshot
+    description: |
+      SCD2 snapshot of GitHub repositories. Tracks all historical changes to key attributes for each repo_id.
+    tests:
+      - dbt_expectations.expect_compound_columns_to_be_unique:
+          column_list: [repo_id, valid_from]
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - repo_id
+            - valid_from
+      - dbt_utils.not_null:
+          column_name: repo_id
+      - dbt_utils.not_null:
+          column_name: valid_from
+      - dbt_utils.expression_is_true:
+          expression: "valid_to > valid_from or valid_to is null"
+      - dbt_utils.expression_is_true:
+          expression: "valid_from < coalesce(valid_to, '2999-12-31')"
+      - dbt_utils.recency:
+          date_column: valid_from
+          max_days_passed: 365
+
 models:
   - name: dim_repos
     description: "One row per unique repository - latest snapshot"
@@ -165,6 +188,7 @@ models:
               expression: ">= 0"
       - name: forks_count
         tests:
+          - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: star_tier
