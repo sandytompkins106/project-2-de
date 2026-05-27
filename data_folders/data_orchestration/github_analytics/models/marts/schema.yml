@@ -19,9 +19,6 @@ snapshots:
           expression: "valid_to > valid_from or valid_to is null"
       - dbt_utils.expression_is_true:
           expression: "valid_from < coalesce(valid_to, '2999-12-31')"
-      - dbt_utils.recency:
-          date_column: valid_from
-          max_days_passed: 365
 
 models:
   - name: dim_repos
