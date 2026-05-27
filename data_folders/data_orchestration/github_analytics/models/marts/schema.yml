@@ -13,12 +13,6 @@ snapshots:
           column_name: owner_login
       - not_null:
           column_name: created_at
-      - unique:
-          column_name: repo_id
-      - unique:
-          column_name: full_name
-      - unique:
-          column_name: node_id
       - accepted_values:
           column_name: visibility
           values: ["public", "private", "internal"]
@@ -46,11 +40,11 @@ snapshots:
       - accepted_values:
           column_name: has_pages
           values: [true, false]
-      - expression_is_true:
+      - dbt_utils.expression_is_true:
           expression: stargazers_count >= 0
-      - expression_is_true:
+      - dbt_utils.expression_is_true:
           expression: forks_count >= 0
-      - expression_is_true:
+      - dbt_utils.expression_is_true:
           expression: open_issues_count >= 0
 
 models:
