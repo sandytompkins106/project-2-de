@@ -1,0 +1,23 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# NEVER commit terraform.tfvars — it contains secrets.
+
+# ── Confluent Cloud ───────────────────────────────────────────────────────────
+# Create a Cloud API key at: https://confluent.cloud → API keys → Add key → Cloud resource management
+confluent_cloud_api_key    = "YOUR_CONFLUENT_CLOUD_API_KEY"
+confluent_cloud_api_secret = "YOUR_CONFLUENT_CLOUD_API_SECRET"
+confluent_region           = "eu-central-1"
+
+# ── ClickHouse Cloud ──────────────────────────────────────────────────────────
+# Create a Development-tier service at clickhouse.cloud
+# Connection details: ClickHouse Cloud → Services → <your service> → Connect
+clickhouse_username = "default"
+clickhouse_password = "YOUR_CLICKHOUSE_PASSWORD"
+clickhouse_http_url = "https://YOUR_SERVICE_ID.eu-central-1.aws.clickhouse.cloud:8443"
+
+# ── AWS / S3 ─────────────────────────────────────────────────────────────────
+# Same credentials as AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in .env.
+# The S3 Source Connector reads from the same bucket as the batch pipeline.
+aws_access_key_id     = "YOUR_AWS_ACCESS_KEY_ID"
+aws_secret_access_key = "YOUR_AWS_SECRET_ACCESS_KEY"
+s3_bucket             = "project-2-github"
+s3_region             = "eu-central-1"

@@ -10,6 +10,13 @@ data_folders/data_integration/output/
 # Environment files with secrets
 .env
 
+# Terraform — never commit real tfvars (secrets) or local state
+terraform/terraform.tfvars
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+
 # VS Code settings folder
 .vscode/
 
